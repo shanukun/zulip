@@ -171,6 +171,7 @@ def build_page_params_for_home_page_load(
     page_params = dict(
         # Server settings.
         debug_mode=settings.DEBUG,
+        default_invitation_validity=settings.INVITATION_LINK_VALIDITY_DAYS,
         test_suite=settings.TEST_SUITE,
         poll_timeout=settings.POLL_TIMEOUT,
         insecure_desktop_app=insecure_desktop_app,

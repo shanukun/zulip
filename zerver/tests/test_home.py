@@ -51,6 +51,7 @@ class HomeTest(ZulipTestCase):
         "custom_profile_field_types",
         "custom_profile_fields",
         "debug_mode",
+        "default_invitation_validity",
         "default_language",
         "default_language_name",
         "delivery_email",

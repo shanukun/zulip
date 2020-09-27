@@ -52,6 +52,9 @@ function populate_invites(invites_data) {
         name: "admin_invites_list",
         modifier(item) {
             item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
+            item.expires_at = timerender.absolute_time(
+                (item.invited + item.invite_expires_in_days * 24 * 3600) * 1000,
+            );
             item.is_admin = page_params.is_admin;
             item.disable_buttons =
                 item.invited_as === settings_config.user_role_values.owner.code &&

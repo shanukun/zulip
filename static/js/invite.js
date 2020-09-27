@@ -27,6 +27,7 @@ function reset_error_messages() {
 
 function get_common_invitation_data() {
     const invite_as = Number.parseInt($("#invite_as").val(), 10);
+    const invite_expires_in_days = Number.parseInt($("#invite_expires_in_days").val(), 10);
     const stream_ids = [];
     $("#invite-stream-checkboxes input:checked").each(function () {
         const stream_id = Number.parseInt($(this).val(), 10);
@@ -34,6 +35,7 @@ function get_common_invitation_data() {
     });
     const data = {
         csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr("value"),
+        invite_expires_in_days,
         invite_as,
         stream_ids: JSON.stringify(stream_ids),
     };
@@ -190,6 +192,8 @@ export function initialize() {
     $(document).on("click", "#invite_uncheck_all_button", () => {
         $("#streams_to_add :checkbox").prop("checked", false);
     });
+
+    $("#invite_expires_in_days").val(page_params.default_invitation_validity);
 
     $("#submit-invitation").on("click", () => {
         const is_generate_invite_link = $("#generate_multiuse_invite_radio").prop("checked");
