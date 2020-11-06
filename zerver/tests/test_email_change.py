@@ -1,4 +1,6 @@
 import datetime
+import re
+from unittest import mock
 
 from django.conf import settings
 from django.core import mail
@@ -37,24 +39,15 @@ class EmailChangeTestCase(ZulipTestCase):
 
     def test_confirm_email_change_when_time_exceeded(self) -> None:
         user_profile = self.example_user("hamlet")
-        old_email = user_profile.email
-        new_email = "hamlet-new@zulip.com"
-        self.login("hamlet")
-        obj = EmailChangeStatus.objects.create(
-            new_email=new_email,
-            old_email=old_email,
-            user_profile=user_profile,
-            realm=user_profile.realm,
-        )
-        key = generate_key()
+        self.login_user(user_profile)
+
         date_sent = now() - datetime.timedelta(days=2)
-        Confirmation.objects.create(
-            content_object=obj,
-            date_sent=date_sent,
-            confirmation_key=key,
-            type=Confirmation.EMAIL_CHANGE,
-        )
-        url = confirmation_url(key, user_profile.realm, Confirmation.EMAIL_CHANGE)
+        with mock.patch("confirmation.models.timezone_now", return_value=date_sent):
+            self.client_patch("/json/settings", {"email": "hamlet-new@zulip.com"})
+        self.assertEqual(len(mail.outbox), 1)
+
+        url = re.findall(r"http://[^\s]+", mail.outbox[0].body)[1]
+
         response = self.client_get(url)
         self.assert_in_success_response(
             ["The confirmation link has expired or been deactivated."], response
