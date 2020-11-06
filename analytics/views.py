@@ -36,7 +36,7 @@ from analytics.models import (
     UserCount,
     installation_epoch,
 )
-from confirmation.models import Confirmation, _properties, confirmation_url
+from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_ACTIVE
 from zerver.decorator import (
     require_non_guest_user,
@@ -1227,7 +1227,7 @@ def get_confirmations(
         content_object = confirmation.content_object
 
         type = confirmation.type
-        days_to_activate = _properties[type].validity_in_days
+        days_to_activate = confirmation.validity_in_days
         expiry_date = confirmation.date_sent + timedelta(days=days_to_activate)
 
         if hasattr(content_object, "status"):

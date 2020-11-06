@@ -1655,7 +1655,10 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         data = {"email": invitee_email, "referrer_email": current_user.email}
         invitee = PreregistrationUser.objects.get(email=data["email"])
         referrer = self.example_user(referrer_name)
-        link = create_confirmation_link(invitee, Confirmation.INVITATION)
+        validity_in_days = 2
+        link = create_confirmation_link(
+            invitee, Confirmation.INVITATION, validity_in_days=validity_in_days
+        )
         context = common_context(referrer)
         context.update(
             activate_url=link,
@@ -1895,7 +1898,10 @@ class InvitationsTestCase(InviteUserBase):
         multiuse_invite = MultiuseInvite.objects.create(
             referred_by=user_profile, realm=user_profile.realm
         )
-        create_confirmation_link(multiuse_invite, Confirmation.MULTIUSE_INVITE)
+        validity_in_days = 2
+        create_confirmation_link(
+            multiuse_invite, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+        )
         self.assertEqual(len(do_get_user_invites(user_profile)), 5)
         self.assertEqual(len(do_get_user_invites(hamlet)), 1)
         self.assertEqual(len(do_get_user_invites(othello)), 1)
@@ -1930,10 +1936,16 @@ class InvitationsTestCase(InviteUserBase):
         othello = self.example_user("othello")
 
         multiuse_invite_one = MultiuseInvite.objects.create(referred_by=hamlet, realm=realm)
-        create_confirmation_link(multiuse_invite_one, Confirmation.MULTIUSE_INVITE)
+        validity_in_days = 2
+        create_confirmation_link(
+            multiuse_invite_one, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+        )
 
         multiuse_invite_two = MultiuseInvite.objects.create(referred_by=othello, realm=realm)
-        create_confirmation_link(multiuse_invite_two, Confirmation.MULTIUSE_INVITE)
+        validity_in_days = 2
+        create_confirmation_link(
+            multiuse_invite_two, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+        )
         confirmation = Confirmation.objects.last()
         confirmation.date_sent = expired_datetime
         confirmation.save()
@@ -2050,7 +2062,10 @@ class InvitationsTestCase(InviteUserBase):
         multiuse_invite = MultiuseInvite.objects.create(
             referred_by=self.example_user("hamlet"), realm=zulip_realm
         )
-        create_confirmation_link(multiuse_invite, Confirmation.MULTIUSE_INVITE)
+        validity_in_days = 2
+        create_confirmation_link(
+            multiuse_invite, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+        )
         result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
         self.assertEqual(result.status_code, 200)
         self.assertIsNone(MultiuseInvite.objects.filter(id=multiuse_invite.id).first())
@@ -2064,7 +2079,10 @@ class InvitationsTestCase(InviteUserBase):
             realm=zulip_realm,
             invited_as=PreregistrationUser.INVITE_AS["REALM_OWNER"],
         )
-        create_confirmation_link(multiuse_invite, Confirmation.MULTIUSE_INVITE)
+        validity_in_days = 2
+        create_confirmation_link(
+            multiuse_invite, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+        )
         error_result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
         self.assert_json_error(error_result, "Must be an organization owner")
 
@@ -2078,7 +2096,10 @@ class InvitationsTestCase(InviteUserBase):
         multiuse_invite_in_mit = MultiuseInvite.objects.create(
             referred_by=self.mit_user("sipbtest"), realm=mit_realm
         )
-        create_confirmation_link(multiuse_invite_in_mit, Confirmation.MULTIUSE_INVITE)
+        validity_in_days = 2
+        create_confirmation_link(
+            multiuse_invite_in_mit, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+        )
         error_result = self.client_delete(
             "/json/invites/multiuse/" + str(multiuse_invite_in_mit.id)
         )
