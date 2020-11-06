@@ -13,7 +13,12 @@ class Command(ZulipBaseCommand):
         self.add_realm_args(parser, True)
 
         parser.add_argument("-s", "--streams", help="A comma-separated list of stream names.")
-
+        parser.add_argument(
+            "--invite-expires-in-days",
+            default=10,
+            type=int,
+            help="Number of days before link expires.",
+        )
         parser.add_argument(
             "--referred-by",
             help="Email of referrer",
@@ -33,5 +38,7 @@ class Command(ZulipBaseCommand):
 
         referred_by = self.get_user(options["referred_by"], realm)
         invite_as = PreregistrationUser.INVITE_AS["MEMBER"]
-        invite_link = do_create_multiuse_invite_link(referred_by, invite_as, streams)
+        invite_link = do_create_multiuse_invite_link(
+            referred_by, invite_as, options["invite_expires_in_days"], streams
+        )
         print(f"You can use {invite_link} to invite as many number of people to the organization.")

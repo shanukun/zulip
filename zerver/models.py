@@ -26,10 +26,11 @@ from bitfield import BitField
 from bitfield.types import BitHandler
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
+from django.contrib.contenttypes.fields import GenericRelation
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
 from django.db import models, transaction
-from django.db.models import CASCADE, Manager, Q, Sum
+from django.db.models import CASCADE, F, Manager, Q, Sum
 from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save
 from django.utils.functional import Promise
@@ -1540,6 +1541,7 @@ class PreregistrationUser(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     email: str = models.EmailField()
 
+    confirmation = GenericRelation("confirmation.Confirmation", related_query_name="prereg_user")
     # If the pre-registration process provides a suggested full name for this user,
     # store it here to use it to prepopulate the Full Name field in the registration form:
     full_name: Optional[str] = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH, null=True)
@@ -1574,11 +1576,20 @@ class PreregistrationUser(models.Model):
     invited_as: int = models.PositiveSmallIntegerField(default=INVITE_AS["MEMBER"])
 
 
-def filter_to_valid_prereg_users(query: QuerySet) -> QuerySet:
-    days_to_activate = settings.INVITATION_LINK_VALIDITY_DAYS
+def filter_to_valid_prereg_users(
+    query: QuerySet,
+    invite_expires_in_days: Optional[int] = None,
+) -> QuerySet:
     active_value = confirmation_settings.STATUS_ACTIVE
     revoked_value = confirmation_settings.STATUS_REVOKED
-    lowest_datetime = timezone_now() - datetime.timedelta(days=days_to_activate)
+
+    if invite_expires_in_days:
+        lowest_datetime = timezone_now() - datetime.timedelta(days=invite_expires_in_days)
+    else:
+        lowest_datetime = timezone_now() - datetime.timedelta(days=1) * F(
+            "confirmation__validity_in_days"
+        )
+
     return query.exclude(status__in=[active_value, revoked_value]).filter(
         invited_at__gte=lowest_datetime
     )

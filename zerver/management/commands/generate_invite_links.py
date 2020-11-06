@@ -19,6 +19,12 @@ class Command(ZulipBaseCommand):
             help="Override that the domain is restricted to external users.",
         )
         parser.add_argument(
+            "--invite-expires-in-days",
+            default=10,
+            type=int,
+            help="Number of days before link expires.",
+        )
+        parser.add_argument(
             "emails",
             metavar="<email>",
             nargs="*",
@@ -60,4 +66,12 @@ class Command(ZulipBaseCommand):
 
             prereg_user = PreregistrationUser(email=email, realm=realm)
             prereg_user.save()
-            print(email + ": " + create_confirmation_link(prereg_user, Confirmation.INVITATION))
+            print(
+                email
+                + ": "
+                + create_confirmation_link(
+                    prereg_user,
+                    Confirmation.INVITATION,
+                    validity_in_days=options["invite_expires_in_days"],
+                )
+            )
