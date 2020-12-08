@@ -3,9 +3,10 @@ from typing import Any, Dict, Union
 
 import orjson
 from django.contrib.auth.password_validation import validate_password
+from django.db.models import Sum
 from django.utils.timezone import now as timezone_now
 
-from analytics.models import StreamCount
+from analytics.models import RealmCount, StreamCount
 from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
@@ -28,10 +29,12 @@ from zerver.lib.actions import (
     do_deactivate_stream,
     do_deactivate_user,
     do_get_user_invites,
+    do_invite_users,
     do_reactivate_realm,
     do_reactivate_user,
     do_regenerate_api_key,
     do_rename_stream,
+    do_resend_user_invite_email,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
     do_set_realm_notifications_stream,
@@ -641,6 +644,32 @@ class TestRealmAuditLog(ZulipTestCase):
             1,
         )
         self.assertEqual(stream.name, "updated name")
+
+    def test_resend_user_invite_email(self) -> None:
+        now = timezone_now()
+        user_profile = self.example_user("hamlet")
+        streams = [
+            get_stream(stream_name, user_profile.realm) for stream_name in ["Denmark", "Verona"]
+        ]
+        do_invite_users(user_profile, ["user1@domain.tld"], streams)
+        prereg_user = PreregistrationUser.objects.filter(realm=user_profile.realm).first()
+        do_resend_user_invite_email(prereg_user, acting_user=user_profile)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user_profile.realm,
+                event_type=RealmAuditLog.USER_INVITE_EMAIL_RESENT,
+                event_time__gte=now,
+                acting_user=user_profile,
+            ).count(),
+            1,
+        )
+
+        self.assertEqual(
+            2,
+            RealmCount.objects.filter(property="invites_sent::day", subgroup=None).aggregate(
+                Sum("value")
+            )["value__sum"],
+        )
 
     def test_change_notification_settings(self) -> None:
         user = self.example_user("hamlet")

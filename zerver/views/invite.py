@@ -149,7 +149,7 @@ def resend_user_invite_email(
         if not user_profile.is_realm_admin:
             raise JsonableError(_("Must be an organization administrator"))
 
-    timestamp = do_resend_user_invite_email(prereg_user)
+    timestamp = do_resend_user_invite_email(prereg_user, acting_user=user_profile)
     return json_success({"timestamp": timestamp})
 
 

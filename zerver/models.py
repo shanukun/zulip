@@ -3163,6 +3163,7 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_NAME_CHANGED = 603
 
     MULTIUSE_INVITE_LINK_CREATED = 701
+    USER_INVITE_EMAIL_RESENT = 702
 
     event_type: int = models.PositiveSmallIntegerField()
 

@@ -1387,7 +1387,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         assertInviteCountEquals(5)
 
         # Resending invite should cost you
-        do_resend_user_invite_email(PreregistrationUser.objects.first())
+        do_resend_user_invite_email(PreregistrationUser.objects.first(), acting_user=user)
         assertInviteCountEquals(6)
 
     def test_messages_read_hour(self) -> None:
