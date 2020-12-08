@@ -785,7 +785,8 @@ class TestSupportEndpoint(ZulipTestCase):
         result = self.client_get("/activity/support", {"q": email})
         check_realm_creation_query_result(result, email)
 
-        do_create_multiuse_invite_link(self.example_user("hamlet"), invited_as=1)
+        user_profile = self.example_user("iago")
+        do_create_multiuse_invite_link(user_profile, invited_as=1, acting_user=user_profile)
         result = self.client_get("/activity/support", {"q": "zulip"})
         check_multiuse_invite_link_query_result(result)
         check_zulip_realm_query_result(result)

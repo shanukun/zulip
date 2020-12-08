@@ -22,10 +22,12 @@ from zerver.lib.actions import (
     do_change_tos_version,
     do_change_user_delivery_email,
     do_change_user_role,
+    do_create_multiuse_invite_link,
     do_create_user,
     do_deactivate_realm,
     do_deactivate_stream,
     do_deactivate_user,
+    do_get_user_invites,
     do_reactivate_realm,
     do_reactivate_user,
     do_regenerate_api_key,
@@ -41,6 +43,7 @@ from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     Message,
+    PreregistrationUser,
     RealmAuditLog,
     Recipient,
     Subscription,
@@ -149,6 +152,24 @@ class TestRealmAuditLog(ZulipTestCase):
             },
         )
         self.assertEqual(old_values_seen, new_values_seen)
+
+    def test_create_multiuse_invite_link(self) -> None:
+        now = timezone_now()
+        user_profile = self.example_user("iago")
+        invited_as = PreregistrationUser.INVITE_AS["MEMBER"]
+        streams = []
+        for stream_name in ["Denmark", "Verona"]:
+            streams.append(get_stream(stream_name, user_profile.realm))
+        invite_link = do_create_multiuse_invite_link(
+            user_profile, invited_as, streams, acting_user=user_profile
+        )
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                event_type=RealmAuditLog.MULTIUSE_INVITE_LINK_CREATED, event_time__gte=now
+            ).count(),
+            1,
+        )
+        self.assertEqual(do_get_user_invites(user_profile)[0]["link_url"], invite_link)
 
     def test_change_password(self) -> None:
         now = timezone_now()

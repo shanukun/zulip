@@ -3162,6 +3162,8 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_DEACTIVATED = 602
     STREAM_NAME_CHANGED = 603
 
+    MULTIUSE_INVITE_LINK_CREATED = 701
+
     event_type: int = models.PositiveSmallIntegerField()
 
     # event_types synced from on-prem installations to Zulip Cloud when

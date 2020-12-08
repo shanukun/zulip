@@ -171,5 +171,7 @@ def generate_multiuse_invite_backend(
             return json_error(_("Invalid stream id {}. No invites were sent.").format(stream_id))
         streams.append(stream)
 
-    invite_link = do_create_multiuse_invite_link(user_profile, invite_as, streams)
+    invite_link = do_create_multiuse_invite_link(
+        user_profile, invite_as, streams, acting_user=user_profile
+    )
     return json_success({"invite_link": invite_link})

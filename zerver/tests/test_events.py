@@ -612,7 +612,10 @@ class NormalActionsTest(BaseAction):
 
         events = self.verify_action(
             lambda: do_create_multiuse_invite_link(
-                self.user_profile, PreregistrationUser.INVITE_AS["MEMBER"], streams
+                self.user_profile,
+                PreregistrationUser.INVITE_AS["MEMBER"],
+                streams,
+                acting_user=self.user_profile,
             ),
             state_change_expected=False,
         )
@@ -639,7 +642,10 @@ class NormalActionsTest(BaseAction):
         for stream_name in ["Denmark", "Verona"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
         do_create_multiuse_invite_link(
-            self.user_profile, PreregistrationUser.INVITE_AS["MEMBER"], streams
+            self.user_profile,
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            streams,
+            acting_user=self.user_profile,
         )
 
         multiuse_object = MultiuseInvite.objects.get()

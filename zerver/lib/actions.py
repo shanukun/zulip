@@ -6298,7 +6298,11 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
 
 
 def do_create_multiuse_invite_link(
-    referred_by: UserProfile, invited_as: int, streams: Sequence[Stream] = []
+    referred_by: UserProfile,
+    invited_as: int,
+    streams: Sequence[Stream] = [],
+    *,
+    acting_user: Optional[UserProfile],
 ) -> str:
     realm = referred_by.realm
     invite = MultiuseInvite.objects.create(realm=realm, referred_by=referred_by)
@@ -6306,6 +6310,14 @@ def do_create_multiuse_invite_link(
         invite.streams.set(streams)
     invite.invited_as = invited_as
     invite.save()
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_time=timezone_now(),
+        acting_user=acting_user,
+        event_type=RealmAuditLog.MULTIUSE_INVITE_LINK_CREATED,
+    )
+
     notify_invites_changed(referred_by)
     return create_confirmation_link(invite, Confirmation.MULTIUSE_INVITE)
 
