@@ -149,7 +149,8 @@ class RealmDomainTest(ZulipTestCase):
         with self.assertRaises(DomainNotAllowedForRealmError):
             email_allowed_for_realm("user@test3.test1.com", realm2)
 
-        do_change_realm_domain(realm_domain, True)
+        acting_user = self.example_user("iago")
+        do_change_realm_domain(realm_domain, True, acting_user=acting_user)
         email_allowed_for_realm("user@test1.com", realm1)
         email_allowed_for_realm("user@test2.test1.com", realm1)
         with self.assertRaises(DomainNotAllowedForRealmError):

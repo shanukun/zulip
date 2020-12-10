@@ -6509,9 +6509,25 @@ def do_add_realm_domain(realm: Realm, domain: str, allow_subdomains: bool) -> (R
     return realm_domain
 
 
-def do_change_realm_domain(realm_domain: RealmDomain, allow_subdomains: bool) -> None:
+def do_change_realm_domain(
+    realm_domain: RealmDomain, allow_subdomains: bool, *, acting_user: Optional[UserProfile]
+) -> None:
     realm_domain.allow_subdomains = allow_subdomains
     realm_domain.save(update_fields=["allow_subdomains"])
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=realm_domain.realm,
+        event_type=RealmAuditLog.REALM_DOMAIN_CHANGED,
+        event_time=event_time,
+        acting_user=acting_user,
+        extra_data=orjson.dumps(
+            {
+                RealmAuditLog.NEW_VALUE: realm_domain.domain,
+            }
+        ).decode(),
+    )
+
     event = dict(
         type="realm_domains",
         op="change",
