@@ -1028,11 +1028,28 @@ def do_reactivate_realm(realm: Realm) -> None:
     )
 
 
-def do_change_realm_subdomain(realm: Realm, new_subdomain: str) -> None:
+def do_change_realm_subdomain(
+    realm: Realm, new_subdomain: str, *, acting_user: Optional[UserProfile]
+) -> None:
     old_subdomain = realm.subdomain
     old_uri = realm.uri
     realm.string_id = new_subdomain
     realm.save(update_fields=["string_id"])
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=RealmAuditLog.REALM_SUBDOMAIN_CHANGED,
+        event_time=event_time,
+        acting_user=acting_user,
+        extra_data=orjson.dumps(
+            {
+                RealmAuditLog.OLD_VALUE: old_subdomain,
+                RealmAuditLog.NEW_VALUE: new_subdomain,
+                "property": "string_id",
+            }
+        ).decode(),
+    )
 
     # If a realm if being renamed multiple times, we should find all the placeholder
     # realms and reset their deactivated_redirect field to point to the new realm uri
@@ -1045,7 +1062,7 @@ def do_change_realm_subdomain(realm: Realm, new_subdomain: str) -> None:
     # it's deactivated redirect to new_subdomain so that we can tell the users that
     # the realm has been moved to a new subdomain.
     placeholder_realm = do_create_realm(old_subdomain, "placeholder-realm")
-    do_deactivate_realm(placeholder_realm, acting_user=None)
+    do_deactivate_realm(placeholder_realm, acting_user=acting_user)
     do_add_deactivated_redirect(placeholder_realm, realm.uri)
 
 

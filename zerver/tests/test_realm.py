@@ -197,7 +197,7 @@ class RealmTest(ZulipTestCase):
         by disabling cache.flush_realm()."""
         user = get_user_profile_by_email("hamlet@zulip.com")
         realm = get_realm("zulip")
-        do_change_realm_subdomain(realm, "newzulip")
+        do_change_realm_subdomain(realm, "newzulip", acting_user=user)
         user = get_user_profile_by_email("hamlet@zulip.com")
         self.assertEqual(user.realm.string_id, "newzulip")
 

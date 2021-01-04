@@ -20,6 +20,7 @@ from zerver.lib.actions import (
     do_change_notification_settings,
     do_change_password,
     do_change_realm_domain,
+    do_change_realm_subdomain,
     do_change_subscription_property,
     do_change_tos_version,
     do_change_user_delivery_email,
@@ -206,6 +207,21 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(realm_audit_log.count(), 1)
         extra_data = orjson.loads(realm_audit_log[0].extra_data)
         self.assertEqual(extra_data[RealmAuditLog.NEW_VALUE], "test.com")
+
+    def test_change_realm_subdomain(self) -> None:
+        now = timezone_now()
+        user = self.example_user("iago")
+        do_change_realm_subdomain(user.realm, "newsubdomain", acting_user=user)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.REALM_SUBDOMAIN_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+            ).count(),
+            1,
+        )
+        self.assertEqual(user.realm.string_id, "newsubdomain")
 
     def test_change_email(self) -> None:
         now = timezone_now()
