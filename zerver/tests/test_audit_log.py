@@ -11,6 +11,7 @@ from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     do_activate_user,
+    do_add_realm_filter,
     do_change_avatar_fields,
     do_change_bot_owner,
     do_change_default_all_public_streams,
@@ -115,6 +116,35 @@ class TestRealmAuditLog(ZulipTestCase):
             extra_data = orjson.loads(event.extra_data)
             self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
             self.assertNotIn(RealmAuditLog.OLD_VALUE, extra_data)
+
+    def test_add_realm_filter(self) -> None:
+        now = timezone_now()
+        realm = get_realm("zulip")
+        user = self.example_user("iago")
+        self.login_user(user)
+        pattern = "#(?P<id>[123])"
+        url_format_string = "https://realm.com/my_realm_filter/%(id)s"
+        do_add_realm_filter(
+            realm,
+            pattern,
+            url_format_string,
+            acting_user=user,
+        )
+        result = self.client_get("/json/realm/filters")
+        self.assert_json_success(result)
+        self.assertEqual(200, result.status_code)
+        self.assertEqual(len(result.json()["filters"]), 1)
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_FILTER_ADDED,
+                extra_data={"pattern": pattern, "url_format_string": url_format_string},
+                event_time__gte=now,
+                acting_user=user,
+            ).count(),
+            1,
+        )
 
     def test_change_role(self) -> None:
         realm = get_realm("zulip")

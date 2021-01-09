@@ -253,8 +253,12 @@ def get_temp_user_group_id() -> Dict[str, object]:
 
 @openapi_param_value_generator(["/realm/filters/{filter_id}:delete"])
 def remove_realm_filters() -> Dict[str, object]:
+    acting_user = helpers.example_user("iago")
     filter_id = do_add_realm_filter(
-        get_realm("zulip"), "#(?P<id>[0-9]{2,8})", "https://github.com/zulip/zulip/pull/%(id)s"
+        get_realm("zulip"),
+        "#(?P<id>[0-9]{2,8})",
+        "https://github.com/zulip/zulip/pull/%(id)s",
+        acting_user=acting_user,
     )
     return {
         "filter_id": filter_id,

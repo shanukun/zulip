@@ -1340,7 +1340,9 @@ class NormalActionsTest(BaseAction):
         url = "https://realm.com/my_realm_filter/%(id)s"
 
         events = self.verify_action(
-            lambda: do_add_realm_filter(self.user_profile.realm, regex, url)
+            lambda: do_add_realm_filter(
+                self.user_profile.realm, regex, url, acting_user=self.user_profile
+            )
         )
         check_realm_filters("events[0]", events[0])
 

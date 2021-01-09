@@ -7,9 +7,15 @@ from zerver.models import RealmFilter, get_realm
 
 class RealmFilterTest(ZulipTestCase):
     def test_list(self) -> None:
+        acting_user = self.example_user("iago")
         self.login("iago")
         realm = get_realm("zulip")
-        do_add_realm_filter(realm, "#(?P<id>[123])", "https://realm.com/my_realm_filter/%(id)s")
+        do_add_realm_filter(
+            realm,
+            "#(?P<id>[123])",
+            "https://realm.com/my_realm_filter/%(id)s",
+            acting_user=acting_user,
+        )
         result = self.client_get("/json/realm/filters")
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
@@ -105,10 +111,14 @@ class RealmFilterTest(ZulipTestCase):
         self.assert_json_error(result, "Must be an organization administrator")
 
     def test_delete(self) -> None:
+        acting_user = self.example_user("iago")
         self.login("iago")
         realm = get_realm("zulip")
         filter_id = do_add_realm_filter(
-            realm, "#(?P<id>[123])", "https://realm.com/my_realm_filter/%(id)s"
+            realm,
+            "#(?P<id>[123])",
+            "https://realm.com/my_realm_filter/%(id)s",
+            acting_user=acting_user,
         )
         filters_count = RealmFilter.objects.count()
         result = self.client_delete(f"/json/realm/filters/{filter_id + 1}")

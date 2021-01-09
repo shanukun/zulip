@@ -28,6 +28,7 @@ def create_filter(
             realm=user_profile.realm,
             pattern=pattern,
             url_format_string=url_format_string,
+            acting_user=user_profile,
         )
         return json_success({"id": filter_id})
     except ValidationError as e:
