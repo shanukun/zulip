@@ -6508,12 +6508,27 @@ def do_add_realm_filter(
 
 
 def do_remove_realm_filter(
-    realm: Realm, pattern: Optional[str] = None, id: Optional[int] = None
+    realm: Realm,
+    pattern: Optional[str] = None,
+    id: Optional[int] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     if pattern is not None:
         RealmFilter.objects.get(realm=realm, pattern=pattern).delete()
     else:
-        RealmFilter.objects.get(realm=realm, pk=id).delete()
+        realm_filter = RealmFilter.objects.get(realm=realm, pk=id)
+        pattern = realm_filter.pattern
+        realm_filter.delete()
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=RealmAuditLog.REALM_FILTER_REMOVED,
+        extra_data={"pattern": pattern},
+        event_time=event_time,
+        acting_user=acting_user,
+    )
     notify_realm_filters(realm)
 
 

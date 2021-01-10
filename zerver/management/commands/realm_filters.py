@@ -57,7 +57,7 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
             do_add_realm_filter(realm, pattern, url_format_string, acting_user=None)
             sys.exit(0)
         elif options["op"] == "remove":
-            do_remove_realm_filter(realm, pattern=pattern)
+            do_remove_realm_filter(realm, pattern=pattern, acting_user=None)
             sys.exit(0)
         else:
             self.print_help("./manage.py", "realm_filters")

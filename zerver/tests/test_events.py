@@ -1336,6 +1336,7 @@ class NormalActionsTest(BaseAction):
         check_realm_emoji_update("events[0]", events[0])
 
     def test_realm_filter_events(self) -> None:
+        acting_user = self.example_user("iago")
         regex = "#(?P<id>[123])"
         url = "https://realm.com/my_realm_filter/%(id)s"
 
@@ -1347,7 +1348,9 @@ class NormalActionsTest(BaseAction):
         check_realm_filters("events[0]", events[0])
 
         events = self.verify_action(
-            lambda: do_remove_realm_filter(self.user_profile.realm, "#(?P<id>[123])")
+            lambda: do_remove_realm_filter(
+                self.user_profile.realm, "#(?P<id>[123])", acting_user=acting_user
+            )
         )
         check_realm_filters("events[0]", events[0])
 

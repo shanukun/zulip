@@ -36,6 +36,7 @@ from zerver.lib.actions import (
     do_reactivate_realm,
     do_reactivate_user,
     do_regenerate_api_key,
+    do_remove_realm_filter,
     do_rename_stream,
     do_resend_user_invite_email,
     do_set_realm_authentication_methods,
@@ -689,6 +690,24 @@ class TestRealmAuditLog(ZulipTestCase):
             1,
         )
         self.assertEqual(user.default_all_public_streams, False)
+
+    def test_remove_realm_filter(self) -> None:
+        user = self.example_user("iago")
+        now = timezone_now()
+        pattern = "#(?P<id>[123])"
+        url = "https://realm.com/my_realm_filter/%(id)s"
+        do_add_realm_filter(user.realm, pattern, url, acting_user=user)
+        do_remove_realm_filter(user.realm, pattern, acting_user=user)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.REALM_FILTER_REMOVED,
+                extra_data={"pattern": pattern},
+                event_time__gte=now,
+                acting_user=user,
+            ).count(),
+            1,
+        )
 
     def test_rename_stream(self) -> None:
         now = timezone_now()
