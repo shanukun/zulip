@@ -81,7 +81,9 @@ class TransferUploadsToS3Test(ZulipTestCase):
         emoji_name = "emoji.png"
 
         with get_test_image_file("img.png") as image_file:
-            emoji = check_add_realm_emoji(othello.realm, emoji_name, othello, image_file)
+            emoji = check_add_realm_emoji(
+                othello.realm, emoji_name, othello, image_file, acting_user=othello
+            )
         if not emoji:
             raise AssertionError("Unable to add emoji.")
 

@@ -1325,7 +1325,9 @@ class NormalActionsTest(BaseAction):
         author = self.example_user("iago")
         with get_test_image_file("img.png") as img_file:
             events = self.verify_action(
-                lambda: check_add_realm_emoji(self.user_profile.realm, "my_emoji", author, img_file)
+                lambda: check_add_realm_emoji(
+                    self.user_profile.realm, "my_emoji", author, img_file, acting_user=author
+                )
             )
 
         check_realm_emoji_update("events[0]", events[0])

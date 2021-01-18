@@ -666,7 +666,7 @@ class Command(BaseCommand):
         # Create a test realm emoji.
         IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
         with open(IMAGE_FILE_PATH, "rb") as fp:
-            check_add_realm_emoji(zulip_realm, "green_tick", iago, fp)
+            check_add_realm_emoji(zulip_realm, "green_tick", iago, fp, acting_user=iago)
 
         if not options["test_suite"]:
             # Populate users with some bar data

@@ -766,6 +766,9 @@ class ImportExportTest(ZulipTestCase):
 
         original_realm = Realm.objects.get(string_id="zulip")
         RealmEmoji.objects.get(realm=original_realm).delete()
+        RealmAuditLog.objects.filter(
+            realm=original_realm, event_type=RealmAuditLog.REALM_EMOJI_ADDED
+        ).delete()
         # data to test import of huddles
         huddle = [
             self.example_user("hamlet"),

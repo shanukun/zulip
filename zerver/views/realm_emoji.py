@@ -39,7 +39,9 @@ def upload_emoji(
             )
         )
 
-    realm_emoji = check_add_realm_emoji(user_profile.realm, emoji_name, user_profile, emoji_file)
+    realm_emoji = check_add_realm_emoji(
+        user_profile.realm, emoji_name, user_profile, emoji_file, acting_user=user_profile
+    )
     if realm_emoji is None:
         return json_error(_("Image file upload failed."))
     return json_success()

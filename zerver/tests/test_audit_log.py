@@ -10,6 +10,7 @@ from analytics.models import RealmCount, StreamCount
 from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    check_add_realm_emoji,
     do_activate_user,
     do_add_realm_filter,
     do_change_avatar_fields,
@@ -48,6 +49,7 @@ from zerver.lib.actions import (
 from zerver.lib.message import get_last_message_id
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import get_test_image_file
 from zerver.models import (
     Message,
     PreregistrationUser,
@@ -117,6 +119,35 @@ class TestRealmAuditLog(ZulipTestCase):
             extra_data = orjson.loads(event.extra_data)
             self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
             self.assertNotIn(RealmAuditLog.OLD_VALUE, extra_data)
+
+    def test_check_add_realm_emoji(self) -> None:
+        now = timezone_now()
+        user = self.example_user("iago")
+        self.login_user(user)
+        with get_test_image_file("img.png") as img_file:
+            realm_emoji = check_add_realm_emoji(
+                realm=user.realm,
+                name="my_emoji",
+                author=user,
+                image_file=img_file,
+                acting_user=user,
+            )
+            if realm_emoji is None:
+                raise Exception("Error creating test emoji.")  # nocoverage
+
+        result = self.client_get("/json/realm/emoji")
+        self.assertEqual(200, result.status_code)
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.REALM_EMOJI_ADDED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data={"emoji": "my_emoji"},
+            ).count(),
+            1,
+        )
 
     def test_add_realm_filter(self) -> None:
         now = timezone_now()

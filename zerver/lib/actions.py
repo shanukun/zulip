@@ -6401,11 +6401,25 @@ def notify_realm_emoji(realm: Realm) -> None:
 
 
 def check_add_realm_emoji(
-    realm: Realm, name: str, author: UserProfile, image_file: File
+    realm: Realm,
+    name: str,
+    author: UserProfile,
+    image_file: File,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> Optional[RealmEmoji]:
     realm_emoji = RealmEmoji(realm=realm, name=name, author=author)
     realm_emoji.full_clean()
     realm_emoji.save()
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=RealmAuditLog.REALM_EMOJI_ADDED,
+        event_time=event_time,
+        acting_user=acting_user,
+        extra_data={"emoji": name},
+    )
 
     emoji_file_name = get_emoji_file_name(image_file.name, realm_emoji.id)
 
