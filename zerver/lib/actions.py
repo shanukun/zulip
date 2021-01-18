@@ -6442,10 +6442,20 @@ def check_add_realm_emoji(
     return realm_emoji
 
 
-def do_remove_realm_emoji(realm: Realm, name: str) -> None:
+def do_remove_realm_emoji(realm: Realm, name: str, *, acting_user: Optional[UserProfile]) -> None:
     emoji = RealmEmoji.objects.get(realm=realm, name=name, deactivated=False)
     emoji.deactivated = True
     emoji.save(update_fields=["deactivated"])
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=RealmAuditLog.REALM_EMOJI_REMOVED,
+        event_time=event_time,
+        acting_user=acting_user,
+        extra_data={"emoji": name},
+    )
+
     notify_realm_emoji(realm)
 
 

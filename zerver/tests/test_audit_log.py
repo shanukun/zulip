@@ -37,6 +37,7 @@ from zerver.lib.actions import (
     do_reactivate_realm,
     do_reactivate_user,
     do_regenerate_api_key,
+    do_remove_realm_emoji,
     do_remove_realm_filter,
     do_rename_stream,
     do_resend_user_invite_email,
@@ -721,6 +722,21 @@ class TestRealmAuditLog(ZulipTestCase):
             1,
         )
         self.assertEqual(user.default_all_public_streams, False)
+
+    def test_remove_realm_emoji(self) -> None:
+        now = timezone_now()
+        user = self.example_user("hamlet")
+        do_remove_realm_emoji(user.realm, "green_tick", acting_user=user)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.REALM_EMOJI_REMOVED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data={"emoji": "green_tick"},
+            ).count(),
+            1,
+        )
 
     def test_remove_realm_filter(self) -> None:
         user = self.example_user("iago")

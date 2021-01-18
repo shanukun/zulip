@@ -1155,15 +1155,17 @@ class MarkdownTest(ZulipTestCase):
             "<p>{}</p>".format(emoji_img(":green_tick:", realm_emoji.file_name, realm.id)),
         )
 
+        acting_user = self.example_user("iago")
         # Deactivate realm emoji.
-        do_remove_realm_emoji(realm, "green_tick")
+        do_remove_realm_emoji(realm, "green_tick", acting_user=acting_user)
         converted = markdown_convert(":green_tick:", message_realm=realm, message=msg)
         self.assertEqual(converted, "<p>:green_tick:</p>")
 
     def test_deactivated_realm_emoji(self) -> None:
+        acting_user = self.example_user("iago")
         # Deactivate realm emoji.
         realm = get_realm("zulip")
-        do_remove_realm_emoji(realm, "green_tick")
+        do_remove_realm_emoji(realm, "green_tick", acting_user=acting_user)
 
         msg = Message(sender=self.example_user("hamlet"))
         converted = markdown_convert(":green_tick:", message_realm=realm, message=msg)
