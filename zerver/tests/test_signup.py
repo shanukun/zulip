@@ -1361,8 +1361,9 @@ earl-test@zulip.com""",
         """
         Tests inviting with various missing or invalid parameters.
         """
+        admin = self.example_user("iago")
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "emails_restricted_to_domains", True)
+        do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=admin)
 
         self.login("hamlet")
         invitee_emails = "foo@zulip.com"
@@ -3051,8 +3052,9 @@ class UserSignUpTest(InviteUserBase):
         email = self.nonreg_email("newguy")
         password = "newpassword"
         timezone = "US/Mountain"
+        admin = self.example_user("iago")
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "default_language", "de")
+        do_set_realm_property(realm, "default_language", "de", acting_user=admin)
 
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
@@ -3083,8 +3085,9 @@ class UserSignUpTest(InviteUserBase):
         """
         email = self.nonreg_email("newguy")
         password = "newpassword"
+        admin = self.example_user("iago")
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "default_twenty_four_hour_time", True)
+        do_set_realm_property(realm, "default_twenty_four_hour_time", True, acting_user=admin)
 
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
@@ -3594,9 +3597,10 @@ class UserSignUpTest(InviteUserBase):
         self.assert_in_success_response(["We couldn't find your confirmation link"], result)
 
     def test_failed_signup_due_to_restricted_domain(self) -> None:
+        admin = self.example_user("iago")
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "invite_required", False)
-        do_set_realm_property(realm, "emails_restricted_to_domains", True)
+        do_set_realm_property(realm, "invite_required", False, acting_user=admin)
+        do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=admin)
 
         email = "user@acme.com"
         form = HomepageForm({"email": email}, realm=realm)

@@ -17,8 +17,9 @@ from zerver.models import DomainNotAllowedForRealmError, RealmDomain, UserProfil
 
 class RealmDomainTest(ZulipTestCase):
     def setUp(self) -> None:
+        admin = self.example_user("iago")
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "emails_restricted_to_domains", True)
+        do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=admin)
 
     def test_list_realm_domains(self) -> None:
         self.login("iago")

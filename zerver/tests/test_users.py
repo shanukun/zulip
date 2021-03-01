@@ -278,7 +278,10 @@ class PermissionTest(ZulipTestCase):
         # Now, switch email address visibility, check client_gravatar
         # is automatically disabled for the user.
         do_set_realm_property(
-            user.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            user.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=admin,
         )
         result = self.client_get("/json/users", {"client_gravatar": "true"})
         self.assert_json_success(result)
@@ -942,7 +945,7 @@ class AdminCreateUserTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Bad name or username")
 
-        do_set_realm_property(realm, "emails_restricted_to_domains", True)
+        do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=admin)
         result = self.client_post(
             "/json/users",
             dict(

@@ -245,8 +245,9 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(content, "(deleted)")
 
     def test_edit_message_history_disabled(self) -> None:
+        admin = self.example_user("iago")
         user_profile = self.example_user("hamlet")
-        do_set_realm_property(user_profile.realm, "allow_edit_history", False)
+        do_set_realm_property(user_profile.realm, "allow_edit_history", False, acting_user=admin)
         self.login("hamlet")
 
         # Single-line edit

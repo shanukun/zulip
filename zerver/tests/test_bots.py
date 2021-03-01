@@ -325,9 +325,13 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_add_bot_email_address_visibility(self) -> None:
         # Test that we don't mangle the email field with
         # email_address_visiblity limited to admins
+        admin = self.example_user("iago")
         user = self.example_user("hamlet")
         do_set_realm_property(
-            user.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            user.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=admin,
         )
         user.refresh_from_db()
 

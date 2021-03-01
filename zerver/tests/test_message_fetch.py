@@ -1635,11 +1635,15 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         The client_gravatar flag determines whether we send avatar_url.
         """
+        admin = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
 
         do_set_realm_property(
-            hamlet.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+            hamlet.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=admin,
         )
 
         self.send_personal_message(hamlet, self.example_user("iago"))
@@ -1654,7 +1658,10 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # Now verify client_gravatar doesn't run with EMAIL_ADDRESS_VISIBILITY_ADMINS
         do_set_realm_property(
-            hamlet.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            hamlet.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=admin,
         )
         result = self.get_and_check_messages(dict(client_gravatar=orjson.dumps(True).decode()))
         message = result["messages"][0]

@@ -1156,9 +1156,13 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_fetch_api_key_email_address_visibility(self) -> None:
+        admin = self.example_user("iago")
         user = self.example_user("cordelia")
         do_set_realm_property(
-            user.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            user.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=admin,
         )
 
         self.login_user(user)
