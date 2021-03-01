@@ -403,11 +403,15 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assertEqual(result["max_message_id"], -1)
 
     def test_delivery_email_presence_for_non_admins(self) -> None:
+        admin = self.example_user("iago")
         user_profile = self.example_user("aaron")
         self.assertFalse(user_profile.is_realm_admin)
 
         do_set_realm_property(
-            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+            user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=admin,
         )
         result = fetch_initial_state_data(user_profile)
 
@@ -415,7 +419,10 @@ class FetchInitialStateDataTest(ZulipTestCase):
             self.assertNotIn("delivery_email", value)
 
         do_set_realm_property(
-            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=admin,
         )
         result = fetch_initial_state_data(user_profile)
 
@@ -427,14 +434,20 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assertTrue(user_profile.is_realm_admin)
 
         do_set_realm_property(
-            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+            user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=user_profile,
         )
         result = fetch_initial_state_data(user_profile)
         for key, value in result["raw_users"].items():
             self.assertNotIn("delivery_email", value)
 
         do_set_realm_property(
-            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=user_profile,
         )
         result = fetch_initial_state_data(user_profile)
         for key, value in result["raw_users"].items():

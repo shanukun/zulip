@@ -812,6 +812,7 @@ class NormalActionsTest(BaseAction):
             self.user_profile.realm,
             "email_address_visibility",
             Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=self.user_profile,
         )
 
         events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"))
@@ -1022,6 +1023,7 @@ class NormalActionsTest(BaseAction):
             self.user_profile.realm,
             "email_address_visibility",
             Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=self.user_profile,
         )
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value

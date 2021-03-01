@@ -966,8 +966,14 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         """
         Attempting to upload avatar on a realm with avatar changes disabled should fail.
         """
+        admin = self.example_user("iago")
         self.login("cordelia")
-        do_set_realm_property(self.example_user("cordelia").realm, "avatar_changes_disabled", True)
+        do_set_realm_property(
+            self.example_user("cordelia").realm,
+            "avatar_changes_disabled",
+            True,
+            acting_user=admin,
+        )
 
         with get_test_image_file("img.png") as fp1:
             result = self.client_post("/json/users/me/avatar", {"f1": fp1})
@@ -1208,15 +1214,16 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         A DELETE request to /json/users/me/avatar should delete the profile picture and return gravatar URL
         """
         self.login("cordelia")
+        admin = self.example_user("iago")
         cordelia = self.example_user("cordelia")
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()
 
-        do_set_realm_property(cordelia.realm, "avatar_changes_disabled", True)
+        do_set_realm_property(cordelia.realm, "avatar_changes_disabled", True, acting_user=admin)
         result = self.client_delete("/json/users/me/avatar")
         self.assert_json_error(result, "Avatar changes are disabled in this organization.", 400)
 
-        do_set_realm_property(cordelia.realm, "avatar_changes_disabled", False)
+        do_set_realm_property(cordelia.realm, "avatar_changes_disabled", False, acting_user=admin)
         result = self.client_delete("/json/users/me/avatar")
         user_profile = self.example_user("cordelia")
 
