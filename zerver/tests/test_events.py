@@ -958,7 +958,8 @@ class NormalActionsTest(BaseAction):
         do_create_default_stream_group(self.user_profile.realm, "group1", "This is group1", streams)
         group = lookup_default_stream_groups(["group1"], self.user_profile.realm)[0]
 
-        do_change_user_role(self.user_profile, UserProfile.ROLE_GUEST)
+        admin = self.example_user("iago")
+        do_change_user_role(self.user_profile, UserProfile.ROLE_GUEST, acting_user=admin)
         venice_stream = get_stream("Venice", self.user_profile.realm)
         self.verify_action(
             lambda: do_add_streams_to_default_stream_group(
@@ -976,7 +977,8 @@ class NormalActionsTest(BaseAction):
         check_default_streams("events[0]", events[0])
 
     def test_default_streams_events_guest(self) -> None:
-        do_change_user_role(self.user_profile, UserProfile.ROLE_GUEST)
+        admin = self.example_user("iago")
+        do_change_user_role(self.user_profile, UserProfile.ROLE_GUEST, acting_user=admin)
         stream = get_stream("Scotland", self.user_profile.realm)
         self.verify_action(
             lambda: do_add_default_stream(stream), state_change_expected=False, num_events=0
@@ -1173,9 +1175,12 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER)
+        admin = self.example_user("iago")
+        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=admin)
         for role in [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_MEMBER]:
-            events = self.verify_action(lambda: do_change_user_role(self.user_profile, role))
+            events = self.verify_action(
+                lambda: do_change_user_role(self.user_profile, role, acting_user=admin)
+            )
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
 
@@ -1187,9 +1192,12 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER)
+        admin = self.example_user("iago")
+        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=admin)
         for role in [UserProfile.ROLE_REALM_OWNER, UserProfile.ROLE_MEMBER]:
-            events = self.verify_action(lambda: do_change_user_role(self.user_profile, role))
+            events = self.verify_action(
+                lambda: do_change_user_role(self.user_profile, role, acting_user=admin)
+            )
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
 
@@ -1201,9 +1209,12 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER)
+        admin = self.example_user("iago")
+        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=admin)
         for role in [UserProfile.ROLE_GUEST, UserProfile.ROLE_MEMBER]:
-            events = self.verify_action(lambda: do_change_user_role(self.user_profile, role))
+            events = self.verify_action(
+                lambda: do_change_user_role(self.user_profile, role, acting_user=admin)
+            )
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
 
@@ -1685,7 +1696,10 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["upload_space_used"], 0)
 
     def test_notify_realm_export(self) -> None:
-        do_change_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        admin = self.example_user("iago")
+        do_change_user_role(
+            self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=admin
+        )
         self.login_user(self.user_profile)
 
         with mock.patch(
@@ -1737,7 +1751,10 @@ class NormalActionsTest(BaseAction):
         )
 
     def test_notify_realm_export_on_failure(self) -> None:
-        do_change_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        admin = self.example_user("iago")
+        do_change_user_role(
+            self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=admin
+        )
         self.login_user(self.user_profile)
 
         with mock.patch(
