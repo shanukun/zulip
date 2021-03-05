@@ -389,8 +389,9 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
     # Admin users have access to all bots in the realm_bots field
     def test_realm_bots_admin(self) -> None:
+        admin = self.example_user("iago")
         user_profile = self.example_user("hamlet")
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=admin)
         self.assertTrue(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile)
         self.assertTrue(len(result["realm_bots"]) > 2)
