@@ -1324,10 +1324,11 @@ class UserProfileTest(ZulipTestCase):
 
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:
+        admin = self.example_user("iago")
         user = self.example_user("hamlet")
         do_deactivate_user(user)
         self.assertFalse(user.is_active)
-        do_reactivate_user(user)
+        do_reactivate_user(user, acting_user=admin)
         self.assertTrue(user.is_active)
 
     def test_api(self) -> None:

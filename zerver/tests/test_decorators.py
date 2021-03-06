@@ -1116,6 +1116,7 @@ class LoginRequiredTest(ZulipTestCase):
         """
         Verifies the zulip_login_required decorator blocks deactivated users.
         """
+        admin = self.example_user("iago")
         user_profile = self.example_user("hamlet")
 
         # Verify fails if logged-out
@@ -1134,7 +1135,7 @@ class LoginRequiredTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
 
         # Verify succeeds if user reactivated
-        do_reactivate_user(user_profile)
+        do_reactivate_user(user_profile, acting_user=admin)
         self.login_user(user_profile)
         result = self.client_get("/accounts/accept_terms/")
         self.assert_in_response("I agree to the", result)
@@ -1183,6 +1184,7 @@ class InactiveUserTest(ZulipTestCase):
         rest_dispatch rejects requests from deactivated users, both /json and api
 
         """
+        admin = self.example_user("iago")
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         do_deactivate_user(user_profile)
@@ -1199,7 +1201,7 @@ class InactiveUserTest(ZulipTestCase):
         self.assert_json_error_contains(result, "Not logged in", status_code=401)
 
         # Even if a logged-in session was leaked, it still wouldn't work
-        do_reactivate_user(user_profile)
+        do_reactivate_user(user_profile, acting_user=admin)
         self.login_user(user_profile)
         user_profile.is_active = False
         user_profile.save()
@@ -1651,13 +1653,14 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         self.assert_json_error_contains(self._do_test(bot), "Webhook bots can only access webhooks")
 
     def test_authenticated_json_post_view_if_user_is_not_active(self) -> None:
+        admin = self.example_user("iago")
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         # we deactivate user manually because do_deactivate_user removes user session
         user_profile.is_active = False
         user_profile.save()
         self.assert_json_error_contains(self._do_test(user_profile), "Account is deactivated")
-        do_reactivate_user(user_profile)
+        do_reactivate_user(user_profile, acting_user=admin)
 
     def test_authenticated_json_post_view_if_user_realm_is_deactivated(self) -> None:
         user_profile = self.example_user("hamlet")
