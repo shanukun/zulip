@@ -547,7 +547,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
-        do_deactivate_user(othello)
+        do_deactivate_user(othello, acting_user=othello)
         self.login("hamlet")
 
         result = self.client_post(

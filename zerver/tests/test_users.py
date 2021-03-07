@@ -404,7 +404,7 @@ class PermissionTest(ZulipTestCase):
 
         # Can only access deactivated users if allow_deactivated is passed
         hamlet = self.example_user("hamlet")
-        do_deactivate_user(hamlet)
+        do_deactivate_user(hamlet, acting_user=hamlet)
         with self.assertRaises(JsonableError):
             access_user_by_id(iago, hamlet.id, for_admin=False)
         with self.assertRaises(JsonableError):
@@ -1158,7 +1158,7 @@ class UserProfileTest(ZulipTestCase):
 
         # We verify that get_accounts_for_email don't return deactivated users accounts
         user = self.example_user("hamlet")
-        do_deactivate_user(user)
+        do_deactivate_user(user, acting_user=user)
         email = self.example_email("hamlet")
         accounts = get_accounts_for_email(email)
         with self.assertRaises(AssertionError):
@@ -1326,7 +1326,7 @@ class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:
         admin = self.example_user("iago")
         user = self.example_user("hamlet")
-        do_deactivate_user(user)
+        do_deactivate_user(user, acting_user=admin)
         self.assertFalse(user.is_active)
         do_reactivate_user(user, acting_user=admin)
         self.assertTrue(user.is_active)
@@ -1408,7 +1408,7 @@ class ActivateTest(ZulipTestCase):
             delay=datetime.timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
-        do_deactivate_user(user)
+        do_deactivate_user(user, acting_user=user)
         self.assertEqual(ScheduledEmail.objects.count(), 0)
 
     def test_send_future_email_with_multiple_recipients(self) -> None:

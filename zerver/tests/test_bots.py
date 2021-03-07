@@ -769,6 +769,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(profile.bot_type, UserProfile.INCOMING_WEBHOOK_BOT)
 
     def test_no_generic_bot_reactivation_allowed_for_non_admins(self) -> None:
+        user_profile = self.example_user("hamlet")
         self.login("hamlet")
         self.create_bot(bot_type=UserProfile.DEFAULT_BOT)
 
@@ -778,7 +779,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         bot_email = "hambot-bot@zulip.testserver"
         bot_user = get_user(bot_email, bot_realm)
-        do_deactivate_user(bot_user)
+        do_deactivate_user(bot_user, acting_user=user_profile)
 
         # A regular user cannot reactivate a generic bot
         self.assert_num_bots_equal(0)
@@ -964,7 +965,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_num_bots_equal(1)
 
         target_user_profile = self.example_user("othello")
-        do_deactivate_user(target_user_profile)
+        do_deactivate_user(target_user_profile, acting_user=target_user_profile)
         target_user_profile = self.example_user("othello")
         self.assertFalse(target_user_profile.is_active)
         bot_info = {

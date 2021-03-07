@@ -3868,7 +3868,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.common_subscribe_to_streams(self.test_user, "Verona", post_data)
 
-        do_deactivate_user(target_profile)
+        do_deactivate_user(target_profile, acting_user=target_profile)
         result = self.common_subscribe_to_streams(
             self.test_user, "Denmark", post_data, allow_fail=True
         )
