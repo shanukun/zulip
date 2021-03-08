@@ -1135,6 +1135,7 @@ class NormalActionsTest(BaseAction):
                     allow_message_editing,
                     message_content_edit_limit_seconds,
                     False,
+                    acting_user=self.user_profile,
                 )
             )
             check_realm_update_dict("events[0]", events[0])
