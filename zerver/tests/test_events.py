@@ -1167,6 +1167,7 @@ class NormalActionsTest(BaseAction):
                     self.user_profile.realm,
                     signup_notifications_stream,
                     signup_notifications_stream_id,
+                    acting_user=self.user_profile,
                 )
             )
             check_realm_update("events[0]", events[0], "signup_notifications_stream_id")
