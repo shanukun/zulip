@@ -464,9 +464,10 @@ class PasswordResetTest(ZulipTestCase):
         self.assertNotIn("not have an account", body)
 
     def test_password_reset_with_deactivated_realm(self) -> None:
+        owner = self.example_user("desdemona")
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
-        do_deactivate_realm(user_profile.realm)
+        do_deactivate_realm(user_profile.realm, acting_user=owner)
 
         # start the password reset process by supplying an email address
         with self.assertLogs(level="INFO") as m:
@@ -4785,7 +4786,8 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(len(outbox), 0)
 
     def test_find_team_deactivated_realm(self) -> None:
-        do_deactivate_realm(get_realm("zulip"))
+        owner = self.example_user("desdemona")
+        do_deactivate_realm(get_realm("zulip"), acting_user=owner)
         data = {"emails": self.example_email("hamlet")}
         result = self.client_post("/accounts/find/", data)
         self.assertEqual(result.status_code, 302)

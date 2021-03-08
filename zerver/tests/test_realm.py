@@ -182,9 +182,10 @@ class RealmTest(ZulipTestCase):
         Hamlet, and we end by checking the cache to ensure that his
         realm appears to be deactivated.  You can make this test fail
         by disabling cache.flush_realm()."""
+        owner = self.example_user("desdemona")
         self.example_user("hamlet")
         realm = get_realm("zulip")
-        do_deactivate_realm(realm)
+        do_deactivate_realm(realm, acting_user=owner)
         user = self.example_user("hamlet")
         self.assertTrue(user.realm.deactivated)
 
@@ -205,6 +206,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(placeholder_realm.deactivated_redirect, user.realm.uri)
 
     def test_do_deactivate_realm_clears_scheduled_jobs(self) -> None:
+        owner = self.example_user("desdemona")
         user = self.example_user("hamlet")
         send_future_email(
             "zerver/emails/followup_day1",
@@ -213,7 +215,7 @@ class RealmTest(ZulipTestCase):
             delay=datetime.timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
-        do_deactivate_realm(user.realm)
+        do_deactivate_realm(user.realm, acting_user=owner)
         self.assertEqual(ScheduledEmail.objects.count(), 0)
 
     def test_do_change_realm_description_clears_cached_descriptions(self) -> None:
@@ -234,21 +236,24 @@ class RealmTest(ZulipTestCase):
 
     def test_do_deactivate_realm_on_deactivated_realm(self) -> None:
         """Ensure early exit is working in realm deactivation"""
+        owner = self.example_user("desdemona")
         realm = get_realm("zulip")
         self.assertFalse(realm.deactivated)
 
-        do_deactivate_realm(realm)
+        do_deactivate_realm(realm, acting_user=owner)
         self.assertTrue(realm.deactivated)
 
-        do_deactivate_realm(realm)
+        do_deactivate_realm(realm, acting_user=owner)
         self.assertTrue(realm.deactivated)
 
     def test_do_set_deactivated_redirect_on_deactivated_realm(self) -> None:
         """Ensure that the redirect url is working when deactivating realm"""
         realm = get_realm("zulip")
+        owner = self.example_user("desdemona")
+        do_deactivate_realm(realm, acting_user=owner)
 
         redirect_url = "new_server.zulip.com"
-        do_deactivate_realm(realm)
+        do_deactivate_realm(realm, acting_user=owner)
         self.assertTrue(realm.deactivated)
         do_add_deactivated_redirect(realm, redirect_url)
         self.assertEqual(realm.deactivated_redirect, redirect_url)
@@ -260,7 +265,8 @@ class RealmTest(ZulipTestCase):
 
     def test_realm_reactivation_link(self) -> None:
         realm = get_realm("zulip")
-        do_deactivate_realm(realm)
+        owner = self.example_user("desdemona")
+        do_deactivate_realm(realm, acting_user=owner)
         self.assertTrue(realm.deactivated)
         confirmation_url = create_confirmation_link(realm, Confirmation.REALM_REACTIVATION)
         response = self.client_get(confirmation_url)
@@ -272,7 +278,8 @@ class RealmTest(ZulipTestCase):
 
     def test_realm_reactivation_confirmation_object(self) -> None:
         realm = get_realm("zulip")
-        do_deactivate_realm(realm)
+        owner = self.example_user("desdemona")
+        do_deactivate_realm(realm, acting_user=owner)
         self.assertTrue(realm.deactivated)
         create_confirmation_link(realm, Confirmation.REALM_REACTIVATION)
         confirmation = Confirmation.objects.last()

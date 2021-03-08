@@ -304,8 +304,9 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(subscription_deactivation_logs[0].modified_user, user)
 
     def test_realm_activation(self) -> None:
+        owner = self.example_user("desdemona")
         realm = get_realm("zulip")
-        do_deactivate_realm(realm)
+        do_deactivate_realm(realm, acting_user=owner)
         log_entry = RealmAuditLog.objects.get(
             realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED
         )

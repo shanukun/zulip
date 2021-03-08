@@ -2245,6 +2245,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(old_plan.status, CustomerPlan.ENDED)
 
     def test_deactivate_realm(self) -> None:
+        owner = self.example_user("desdemona")
         user = self.example_user("hamlet")
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
@@ -2262,7 +2263,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(last_ledger_entry.licenses, 20)
         self.assertEqual(last_ledger_entry.licenses_at_next_renewal, 20)
 
-        do_deactivate_realm(get_realm("zulip"))
+        do_deactivate_realm(get_realm("zulip"), acting_user=owner)
 
         plan.refresh_from_db()
         self.assertTrue(get_realm("zulip").deactivated)
@@ -2288,12 +2289,13 @@ class StripeTest(StripeTestCase):
         mocked.assert_not_called()
 
     def test_reupgrade_by_billing_admin_after_realm_deactivation(self) -> None:
+        owner = self.example_user("desdemona")
         user = self.example_user("hamlet")
 
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
 
-        do_deactivate_realm(get_realm("zulip"))
+        do_deactivate_realm(get_realm("zulip"), acting_user=owner)
         self.assertTrue(get_realm("zulip").deactivated)
         do_reactivate_realm(get_realm("zulip"))
 
