@@ -1076,13 +1076,14 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
 
+        admin = self.example_user("iago")
         self.login("iago")
 
         with mock.patch("analytics.views.do_scrub_realm") as m:
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{lear_realm.id}", "scrub_realm": "scrub_realm"}
             )
-            m.assert_called_once_with(lear_realm, acting_user=self.example_user("iago"))
+            m.assert_called_once_with(lear_realm, acting_user=admin)
             self.assert_in_success_response(["lear scrubbed"], result)
 
         with mock.patch("analytics.views.do_scrub_realm") as m:
