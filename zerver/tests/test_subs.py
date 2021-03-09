@@ -558,13 +558,15 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(subscription_exists)
 
     def test_deactivate_stream_removes_default_stream(self) -> None:
+        admin = self.example_user("iago")
         stream = self.make_stream("new_stream")
         do_add_default_stream(stream)
         self.assertEqual(1, DefaultStream.objects.filter(stream_id=stream.id).count())
-        do_deactivate_stream(stream)
+        do_deactivate_stream(stream, acting_user=admin)
         self.assertEqual(0, DefaultStream.objects.filter(stream_id=stream.id).count())
 
     def test_deactivate_stream_removes_stream_from_default_stream_groups(self) -> None:
+        admin = self.example_user("iago")
         realm = get_realm("zulip")
         streams_to_keep = []
         for stream_name in ["stream1", "stream2"]:
@@ -586,10 +588,11 @@ class StreamAdminTest(ZulipTestCase):
         default_stream_groups = get_default_stream_groups(realm)
         self.assertEqual(get_streams(default_stream_groups[0]), all_streams)
 
-        do_deactivate_stream(streams_to_remove[0])
+        do_deactivate_stream(streams_to_remove[0], acting_user=admin)
         self.assertEqual(get_streams(default_stream_groups[0]), streams_to_keep)
 
     def test_deactivate_stream_marks_messages_as_read(self) -> None:
+        admin = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         stream = self.make_stream("new_stream")
@@ -609,7 +612,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(new_stream_usermessage.flags.read)
         self.assertFalse(denmark_usermessage.flags.read)
 
-        do_deactivate_stream(stream)
+        do_deactivate_stream(stream, acting_user=admin)
         new_stream_usermessage.refresh_from_db()
         denmark_usermessage.refresh_from_db()
         self.assertTrue(new_stream_usermessage.flags.read)

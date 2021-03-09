@@ -53,6 +53,7 @@ class GlobalPublicStreamTest(ZulipTestCase):
         self.assert_in_success_response(["goes testing."], result)
 
     def test_get_web_public_streams(self) -> None:
+        admin = self.example_user("iago")
         realm = get_realm("zulip")
         public_streams = get_web_public_streams(realm)
         self.assert_length(public_streams, 1)
@@ -76,7 +77,7 @@ class GlobalPublicStreamTest(ZulipTestCase):
         self.assert_length(info.never_subscribed, 0)
         self.assertNotEqual(info.subscriptions[0]["color"], info.subscriptions[1]["color"])
 
-        do_deactivate_stream(test_stream)
+        do_deactivate_stream(test_stream, acting_user=admin)
         public_streams = get_web_public_streams(realm)
         self.assert_length(public_streams, 1)
         info = get_web_public_subs(realm)
