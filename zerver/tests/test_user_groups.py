@@ -389,6 +389,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assertEqual(len(members), 1)
 
     def test_mentions(self) -> None:
+        user_profile = self.example_user("iago")
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
@@ -401,7 +402,7 @@ class UserGroupAPITestCase(ZulipTestCase):
 
         content_with_group_mention = "hey @*support* can you help us with this?"
 
-        ensure_stream(realm, stream_name)
+        ensure_stream(realm, stream_name, acting_user=user_profile)
 
         all_users = {cordelia, hamlet, othello, zoe}
         support_team = {hamlet, zoe}

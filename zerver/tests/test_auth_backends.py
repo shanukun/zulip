@@ -1461,7 +1461,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         stream_names = ["new_stream_1", "new_stream_2"]
         streams = []
         for stream_name in set(stream_names):
-            stream = ensure_stream(realm, stream_name)
+            stream = ensure_stream(realm, stream_name, acting_user=None)
             streams.append(stream)
 
         referrer = self.example_user("hamlet")
@@ -3630,7 +3630,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         stream_names = ["new_stream_1", "new_stream_2"]
         streams = []
         for stream_name in set(stream_names):
-            stream = ensure_stream(realm, stream_name)
+            stream = ensure_stream(realm, stream_name, acting_user=None)
             streams.append(stream)
 
         # Without the invite link, we can't create an account due to invite_required
