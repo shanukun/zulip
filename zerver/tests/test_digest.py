@@ -371,6 +371,7 @@ class TestDigestEmailMessages(ZulipTestCase):
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_no_email_digest_for_bots(self) -> None:
         RealmAuditLog.objects.all().delete()
+        acting_user = self.example_user("hamlet")
 
         cutoff = timezone_now() - datetime.timedelta(days=5)
 

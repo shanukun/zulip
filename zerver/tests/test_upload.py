@@ -1329,9 +1329,10 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         self.assert_json_error(result, "Must be an organization administrator")
 
     def test_get_gravatar_icon(self) -> None:
+        acting_user = self.example_user("hamlet")
         self.login("hamlet")
         realm = get_realm("zulip")
-        do_change_icon_source(realm, Realm.ICON_FROM_GRAVATAR)
+        do_change_icon_source(realm, Realm.ICON_FROM_GRAVATAR, acting_user=acting_user)
         with self.settings(ENABLE_GRAVATAR=True):
             response = self.client_get("/json/realm/icon", {"foo": "bar"})
             redirect_url = response["Location"]
@@ -1343,10 +1344,11 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
             self.assertTrue(redirect_url.endswith(realm_icon_url(realm) + "&foo=bar"))
 
     def test_get_realm_icon(self) -> None:
+        acting_user = self.example_user("hamlet")
         self.login("hamlet")
 
         realm = get_realm("zulip")
-        do_change_icon_source(realm, Realm.ICON_UPLOADED)
+        do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=acting_user)
         response = self.client_get("/json/realm/icon", {"foo": "bar"})
         redirect_url = response["Location"]
         self.assertTrue(redirect_url.endswith(realm_icon_url(realm) + "&foo=bar"))
@@ -1390,9 +1392,10 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         """
         A DELETE request to /json/realm/icon should delete the realm icon and return gravatar URL
         """
+        acting_user = self.example_user("iago")
         self.login("iago")
         realm = get_realm("zulip")
-        do_change_icon_source(realm, Realm.ICON_UPLOADED)
+        do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=acting_user)
 
         result = self.client_delete("/json/realm/icon")
 

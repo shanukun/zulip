@@ -286,7 +286,7 @@ def patch_bot_backend(
 
         previous_owner = bot.bot_owner
         if previous_owner != owner:
-            do_change_bot_owner(bot, owner, user_profile)
+            do_change_bot_owner(bot, owner, acting_user=user_profile)
 
     if default_sending_stream is not None:
         if default_sending_stream == "":
@@ -349,7 +349,7 @@ def regenerate_bot_api_key(
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
 
-    new_api_key = do_regenerate_api_key(bot, user_profile)
+    new_api_key = do_regenerate_api_key(bot, acting_user=user_profile)
     json_result = dict(
         api_key=new_api_key,
     )

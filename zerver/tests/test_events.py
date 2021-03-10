@@ -1072,11 +1072,18 @@ class NormalActionsTest(BaseAction):
     def test_change_pin_stream(self) -> None:
         stream = get_stream("Denmark", self.user_profile.realm)
         sub = get_subscription(stream.name, self.user_profile)
-        do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", False)
+        do_change_subscription_property(
+            self.user_profile, sub, stream, "pin_to_top", False, acting_user=self.user_profile
+        )
         for pinned in (True, False):
             events = self.verify_action(
                 lambda: do_change_subscription_property(
-                    self.user_profile, sub, stream, "pin_to_top", pinned
+                    self.user_profile,
+                    sub,
+                    stream,
+                    "pin_to_top",
+                    pinned,
+                    acting_user=self.user_profile,
                 )
             )
             check_subscription_update(
@@ -1095,7 +1102,12 @@ class NormalActionsTest(BaseAction):
             for value in (True, False):
                 events = self.verify_action(
                     lambda: do_change_subscription_property(
-                        self.user_profile, sub, stream, setting_name, value
+                        self.user_profile,
+                        sub,
+                        stream,
+                        setting_name,
+                        value,
+                        acting_user=self.user_profile,
                     ),
                     notification_settings_null=True,
                 )
@@ -1109,7 +1121,12 @@ class NormalActionsTest(BaseAction):
             for value in (True, False):
                 events = self.verify_action(
                     lambda: do_change_subscription_property(
-                        self.user_profile, sub, stream, setting_name, value
+                        self.user_profile,
+                        sub,
+                        stream,
+                        setting_name,
+                        value,
+                        acting_user=self.user_profile,
                     )
                 )
                 check_subscription_update(
@@ -1261,7 +1278,9 @@ class NormalActionsTest(BaseAction):
         notification_setting = "notification_sound"
 
         events = self.verify_action(
-            lambda: do_change_notification_settings(self.user_profile, notification_setting, "ding")
+            lambda: do_change_notification_settings(
+                self.user_profile, notification_setting, "ding", acting_user=self.user_profile
+            )
         )
         check_update_global_notifications("events[0]", events[0], "ding")
 
@@ -1325,6 +1344,7 @@ class NormalActionsTest(BaseAction):
         check_realm_filters("events[0]", events[0])
 
     def test_realm_domain_events(self) -> None:
+        admin = self.example_user("iago")
         events = self.verify_action(
             lambda: do_add_realm_domain(self.user_profile.realm, "zulip.org", False)
         )
@@ -1340,7 +1360,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["realm_domain"]["domain"], "zulip.org")
         self.assertEqual(events[0]["realm_domain"]["allow_subdomains"], True)
 
-        events = self.verify_action(lambda: do_remove_realm_domain(test_domain))
+        events = self.verify_action(lambda: do_remove_realm_domain(test_domain, acting_user=admin))
 
         check_realm_domains_remove("events[0]", events[0])
         self.assertEqual(events[0]["domain"], "zulip.org")
@@ -1380,7 +1400,7 @@ class NormalActionsTest(BaseAction):
 
     def test_regenerate_bot_api_key(self) -> None:
         bot = self.create_bot("test")
-        action = lambda: do_regenerate_api_key(bot, self.user_profile)
+        action = lambda: do_regenerate_api_key(bot, acting_user=self.user_profile)
         events = self.verify_action(action)
         check_realm_bot_update("events[0]", events[0], "api_key")
 
@@ -1394,7 +1414,9 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[1]["type"], "realm_user")
 
     def test_change_realm_icon_source(self) -> None:
-        action = lambda: do_change_icon_source(self.user_profile.realm, Realm.ICON_UPLOADED)
+        action = lambda: do_change_icon_source(
+            self.user_profile.realm, Realm.ICON_UPLOADED, acting_user=self.user_profile
+        )
         events = self.verify_action(action, state_change_expected=True)
         check_realm_update_dict("events[0]", events[0])
 
@@ -1414,7 +1436,9 @@ class NormalActionsTest(BaseAction):
 
     def test_change_bot_default_all_public_streams(self) -> None:
         bot = self.create_bot("test")
-        action = lambda: do_change_default_all_public_streams(bot, True)
+        action = lambda: do_change_default_all_public_streams(
+            bot, True, acting_user=self.user_profile
+        )
         events = self.verify_action(action)
         check_realm_bot_update("events[0]", events[0], "default_all_public_streams")
 
@@ -1422,11 +1446,13 @@ class NormalActionsTest(BaseAction):
         bot = self.create_bot("test")
         stream = get_stream("Rome", bot.realm)
 
-        action = lambda: do_change_default_sending_stream(bot, stream)
+        action = lambda: do_change_default_sending_stream(
+            bot, stream, acting_user=self.user_profile
+        )
         events = self.verify_action(action)
         check_realm_bot_update("events[0]", events[0], "default_sending_stream")
 
-        action = lambda: do_change_default_sending_stream(bot, None)
+        action = lambda: do_change_default_sending_stream(bot, None, acting_user=self.user_profile)
         events = self.verify_action(action)
         check_realm_bot_update("events[0]", events[0], "default_sending_stream")
 
@@ -1434,11 +1460,15 @@ class NormalActionsTest(BaseAction):
         bot = self.create_bot("test")
         stream = get_stream("Rome", bot.realm)
 
-        action = lambda: do_change_default_events_register_stream(bot, stream)
+        action = lambda: do_change_default_events_register_stream(
+            bot, stream, acting_user=self.user_profile
+        )
         events = self.verify_action(action)
         check_realm_bot_update("events[0]", events[0], "default_events_register_stream")
 
-        action = lambda: do_change_default_events_register_stream(bot, None)
+        action = lambda: do_change_default_events_register_stream(
+            bot, None, acting_user=self.user_profile
+        )
         events = self.verify_action(action)
         check_realm_bot_update("events[0]", events[0], "default_events_register_stream")
 
@@ -1446,7 +1476,7 @@ class NormalActionsTest(BaseAction):
         self.user_profile = self.example_user("iago")
         owner = self.example_user("hamlet")
         bot = self.create_bot("test")
-        action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
+        action = lambda: do_change_bot_owner(bot, owner, acting_user=self.user_profile)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_update("events[0]", events[0], "owner_id")
         check_realm_user_update("events[1]", events[1], "bot_owner_id")
@@ -1454,7 +1484,7 @@ class NormalActionsTest(BaseAction):
         self.user_profile = self.example_user("aaron")
         owner = self.example_user("hamlet")
         bot = self.create_bot("test1", full_name="Test1 Testerson")
-        action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
+        action = lambda: do_change_bot_owner(bot, owner, acting_user=self.user_profile)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_delete("events[0]", events[0])
         check_realm_user_update("events[1]", events[1], "bot_owner_id")
@@ -1462,7 +1492,7 @@ class NormalActionsTest(BaseAction):
         previous_owner = self.example_user("aaron")
         self.user_profile = self.example_user("hamlet")
         bot = self.create_test_bot("test2", previous_owner, full_name="Test2 Testerson")
-        action = lambda: do_change_bot_owner(bot, self.user_profile, previous_owner)
+        action = lambda: do_change_bot_owner(bot, self.user_profile, acting_user=previous_owner)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_add("events[0]", events[0])
         check_realm_user_update("events[1]", events[1], "bot_owner_id")

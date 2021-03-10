@@ -403,7 +403,12 @@ class StreamAdminTest(ZulipTestCase):
 
         sub = get_subscription("private_stream_2", user_profile)
         do_change_subscription_property(
-            user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR
+            user_profile,
+            sub,
+            stream,
+            "role",
+            Subscription.ROLE_STREAM_ADMINISTRATOR,
+            acting_user=user_profile,
         )
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assert_json_success(result)
@@ -454,7 +459,12 @@ class StreamAdminTest(ZulipTestCase):
 
         sub = get_subscription("public_stream_2", user_profile)
         do_change_subscription_property(
-            user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR
+            user_profile,
+            sub,
+            stream,
+            "role",
+            Subscription.ROLE_STREAM_ADMINISTRATOR,
+            acting_user=user_profile,
         )
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assert_json_success(result)
@@ -547,7 +557,12 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(user_profile, stream.name)
         sub = get_subscription(stream.name, user_profile)
         do_change_subscription_property(
-            user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR
+            user_profile,
+            sub,
+            stream,
+            "role",
+            Subscription.ROLE_STREAM_ADMINISTRATOR,
+            acting_user=user_profile,
         )
 
         result = self.client_delete(f"/json/streams/{stream.id}")
@@ -840,7 +855,12 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(user_profile, "new_stream")
         sub = get_subscription("new_stream", user_profile)
         do_change_subscription_property(
-            user_profile, sub, new_stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR
+            user_profile,
+            sub,
+            new_stream,
+            "role",
+            Subscription.ROLE_STREAM_ADMINISTRATOR,
+            acting_user=user_profile,
         )
         del events[:]
         with tornado_redirected_to_list(events):
@@ -1038,7 +1058,12 @@ class StreamAdminTest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=admin)
         sub = get_subscription("stream_name1", user_profile)
         do_change_subscription_property(
-            user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR
+            user_profile,
+            sub,
+            stream,
+            "role",
+            Subscription.ROLE_STREAM_ADMINISTRATOR,
+            acting_user=user_profile,
         )
 
         with tornado_redirected_to_list(events):
@@ -1060,7 +1085,9 @@ class StreamAdminTest(ZulipTestCase):
         sub = get_subscription("stream_name1", user_profile)
 
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=admin)
-        do_change_subscription_property(user_profile, sub, stream, "role", Subscription.ROLE_MEMBER)
+        do_change_subscription_property(
+            user_profile, sub, stream, "role", Subscription.ROLE_MEMBER, acting_user=user_profile
+        )
 
         stream_id = get_stream("stream_name1", user_profile.realm).id
         result = self.client_patch(
@@ -1093,7 +1120,9 @@ class StreamAdminTest(ZulipTestCase):
         sub = get_subscription("stream_name1", user_profile)
 
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=admin)
-        do_change_subscription_property(user_profile, sub, stream, "role", Subscription.ROLE_MEMBER)
+        do_change_subscription_property(
+            user_profile, sub, stream, "role", Subscription.ROLE_MEMBER, acting_user=user_profile
+        )
 
         do_set_realm_property(user_profile.realm, "waiting_period_threshold", 10, acting_user=admin)
 
@@ -1117,7 +1146,12 @@ class StreamAdminTest(ZulipTestCase):
             test_non_admin(how_old=5, is_new=True, policy=policy)
 
         do_change_subscription_property(
-            user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR
+            user_profile,
+            sub,
+            stream,
+            "role",
+            Subscription.ROLE_STREAM_ADMINISTRATOR,
+            acting_user=user_profile,
         )
 
         for policy in policies:
@@ -1485,7 +1519,12 @@ class StreamAdminTest(ZulipTestCase):
             if is_stream_admin:
                 sub = get_subscription(stream_name, user_profile)
                 do_change_subscription_property(
-                    user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR
+                    user_profile,
+                    sub,
+                    stream,
+                    "role",
+                    Subscription.ROLE_STREAM_ADMINISTRATOR,
+                    acting_user=user_profile,
                 )
         if target_users_subbed:
             for user in target_users:
