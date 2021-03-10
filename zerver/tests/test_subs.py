@@ -3708,6 +3708,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         Check users getting add_peer_event is correct
         """
+        admin = self.example_user("iago")
         user1 = self.example_user("othello")
         user2 = self.example_user("cordelia")
         user3 = self.example_user("hamlet")
@@ -3739,6 +3740,7 @@ class SubscriptionAPITest(ZulipTestCase):
                         [user1, user2],
                         [stream1, stream2, stream3, private],
                         get_client("website"),
+                        acting_user=admin,
                     )
 
         self.assert_length(query_count, 28)
@@ -3808,6 +3810,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 users=[mit_user],
                 streams=streams,
                 acting_client=get_client("website"),
+                acting_user=mit_user,
             )
 
         self.assert_length(events, 0)

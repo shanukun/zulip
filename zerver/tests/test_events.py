@@ -1556,8 +1556,9 @@ class NormalActionsTest(BaseAction):
         self.subscribe(self.example_user("othello"), "test_stream")
         stream = get_stream("test_stream", self.user_profile.realm)
 
+        user_profile = self.example_user("othello")
         action = lambda: bulk_remove_subscriptions(
-            [self.example_user("othello")], [stream], get_client("website")
+            [user_profile], [stream], get_client("website"), acting_user=user_profile
         )
         events = self.verify_action(action)
         check_subscription_peer_remove("events[0]", events[0])
@@ -1951,12 +1952,13 @@ class SubscribeActionTest(BaseAction):
         )
         check_subscription_peer_add("events[0]", events[0])
 
+        admin = self.example_user("iago")
         stream = get_stream("test_stream", self.user_profile.realm)
 
         # Now remove the first user, to test the normal unsubscribe flow and
         # 'peer_remove' event for subscribed streams.
         action = lambda: bulk_remove_subscriptions(
-            [self.example_user("othello")], [stream], get_client("website")
+            [self.example_user("othello")], [stream], get_client("website"), acting_user=admin
         )
         events = self.verify_action(
             action,
@@ -1967,7 +1969,7 @@ class SubscribeActionTest(BaseAction):
 
         # Now remove the user himself, to test the 'remove' event flow
         action = lambda: bulk_remove_subscriptions(
-            [self.example_user("hamlet")], [stream], get_client("website")
+            [self.example_user("hamlet")], [stream], get_client("website"), acting_user=admin
         )
         events = self.verify_action(
             action, include_subscribers=include_subscribers, include_streams=False, num_events=2
@@ -1991,7 +1993,7 @@ class SubscribeActionTest(BaseAction):
 
         # Remove the user to test 'peer_remove' event flow for unsubscribed stream.
         action = lambda: bulk_remove_subscriptions(
-            [self.example_user("iago")], [stream], get_client("website")
+            [self.example_user("iago")], [stream], get_client("website"), acting_user=admin
         )
         events = self.verify_action(
             action,
