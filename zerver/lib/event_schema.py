@@ -181,14 +181,23 @@ custom_profile_field_type = DictType(
     ],
 )
 
-custom_profile_fields_event = event_dict_type(
+custom_profile_fields_add_event = event_dict_type(
     required_keys=[
         ("type", Equals("custom_profile_fields")),
         ("op", Equals("add")),
         ("fields", ListType(custom_profile_field_type)),
     ]
 )
-check_custom_profile_fields = make_checker(custom_profile_fields_event)
+check_custom_profile_fields_add = make_checker(custom_profile_fields_add_event)
+
+custom_profile_fields_update_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("custom_profile_fields")),
+        ("op", Equals("update")),
+        ("fields", ListType(custom_profile_field_type)),
+    ]
+)
+check_custom_profile_fields_update = make_checker(custom_profile_fields_update_event)
 
 _check_stream_group = DictType(
     required_keys=[

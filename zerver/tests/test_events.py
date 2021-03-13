@@ -98,7 +98,8 @@ from zerver.lib.event_schema import (
     check_attachment_add,
     check_attachment_remove,
     check_attachment_update,
-    check_custom_profile_fields,
+    check_custom_profile_fields_add,
+    check_custom_profile_fields_update,
     check_default_stream_groups,
     check_default_streams,
     check_delete_message,
@@ -696,7 +697,7 @@ class NormalActionsTest(BaseAction):
             lambda: notify_realm_custom_profile_fields(self.user_profile.realm, "add"),
             state_change_expected=False,
         )
-        check_custom_profile_fields("events[0]", events[0])
+        check_custom_profile_fields_add("events[0]", events[0])
 
         realm = self.user_profile.realm
         field = realm.customprofilefield_set.get(realm=realm, name="Biography")
@@ -705,10 +706,10 @@ class NormalActionsTest(BaseAction):
         try_update_realm_custom_profile_field(realm, field, name, hint=hint)
 
         events = self.verify_action(
-            lambda: notify_realm_custom_profile_fields(self.user_profile.realm, "add"),
+            lambda: notify_realm_custom_profile_fields(self.user_profile.realm, "update"),
             state_change_expected=False,
         )
-        check_custom_profile_fields("events[0]", events[0])
+        check_custom_profile_fields_update("events[0]", events[0])
 
     def test_custom_profile_field_data_events(self) -> None:
         field_id = self.user_profile.realm.customprofilefield_set.get(

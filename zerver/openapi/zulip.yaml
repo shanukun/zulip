@@ -1479,6 +1479,104 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent to all users in a Zulip organization when existing custom
+                                profile field types are updated for that Zulip organization.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - custom_profile_fields
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                fields:
+                                  type: array
+                                  description: |
+                                    An array of dictionaries where each dictionary contains
+                                    details of updated custom profile fields for the Zulip
+                                    organization.
+                                  items:
+                                    $ref: "#/components/schemas/CustomProfileField"
+                              example:
+                                {
+                                  "type": "custom_profile_fields",
+                                  "op": "update",
+                                  "fields":
+                                    [
+                                      {
+                                        "id": 1,
+                                        "name": "Phone number",
+                                        "type": 1,
+                                        "hint": "",
+                                        "field_data": "",
+                                        "order": 1,
+                                      },
+                                      {
+                                        "id": 2,
+                                        "name": "Biography",
+                                        "type": 2,
+                                        "hint": "What are you known for?",
+                                        "field_data": "",
+                                        "order": 2,
+                                      },
+                                      {
+                                        "id": 3,
+                                        "name": "Favorite food",
+                                        "type": 2,
+                                        "hint": "Or drink, if you'd prefer",
+                                        "field_data": "",
+                                        "order": 3,
+                                      },
+                                      {
+                                        "id": 4,
+                                        "name": "Favorite editor",
+                                        "type": 3,
+                                        "hint": "",
+                                        "field_data": '{"vim":{"text":"Vim","order":"1"},"emacs":{"text":"Emacs","order":"2"}}',
+                                        "order": 4,
+                                      },
+                                      {
+                                        "id": 5,
+                                        "name": "Birthday",
+                                        "type": 4,
+                                        "hint": "",
+                                        "field_data": "",
+                                        "order": 5,
+                                      },
+                                      {
+                                        "id": 6,
+                                        "name": "Favorite website",
+                                        "type": 5,
+                                        "hint": "Or your personal blog's URL",
+                                        "field_data": "",
+                                        "order": 6,
+                                      },
+                                      {
+                                        "id": 7,
+                                        "name": "Mentor",
+                                        "type": 6,
+                                        "hint": "",
+                                        "field_data": "",
+                                        "order": 7,
+                                      },
+                                      {
+                                        "id": 8,
+                                        "name": "GitHub",
+                                        "type": 7,
+                                        "hint": "Enter your GitHub username",
+                                        "field_data": '{"subtype":"github"}',
+                                        "order": 8,
+                                      },
+                                    ],
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent to all users in a Zulip organization when an organization
                                 administrator changes the organization's configured default stream groups.
 

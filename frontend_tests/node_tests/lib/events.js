@@ -111,12 +111,49 @@ exports.fixtures = {
         upload_space_used: 90000,
     },
 
+    custom_profile_fields__add: {
+        type: "custom_profile_fields",
+        op: "add",
+        fields: [
+            {
+                id: 1,
+                name: "Biography",
+                type: 2,
+                hint: "What are you known for?",
+                field_data: "",
+                order: 1,
+            },
+            {
+                id: 2,
+                name: "Favorite food",
+                type: 1,
+                hint: "Or drink, if you'd prefer",
+                field_data: "",
+                order: 2,
+            },
+        ],
+    },
+
     custom_profile_fields__update: {
         type: "custom_profile_fields",
         op: "update",
         fields: [
-            {id: 1, name: "teams", type: 1},
-            {id: 2, name: "hobbies", type: 1},
+            {
+                id: 1,
+                name: "Birthday",
+                type: 4,
+                hint: "",
+                field_data: "",
+                order: 1,
+            },
+            {
+                id: 2,
+                name: "GitHub",
+                type: 7,
+                hint: "Enter your GitHub username",
+                field_data: '{"subtype":"github"}',
+                order: 2,
+            },
         ],
     },
 
