@@ -2776,6 +2776,34 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent to all users in a Zulip organization when
+                                the organization (realm) is deactivated.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm
+                                op:
+                                  type: string
+                                  enum:
+                                    - deactivated
+                                realm_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the deactivated realm.
+                              example:
+                                {
+                                  "type": "realm",
+                                  "op": "deactivated",
+                                  "realm_id": 2,
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent to all users in a Zulip organization when the
                                 configuration of the organization (realm) has changed.
 
