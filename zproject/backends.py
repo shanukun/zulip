@@ -837,7 +837,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             opts["default_stream_groups"] = []
 
         user_profile = do_create_user(
-            username, None, self._realm, full_name, acting_user=None, **opts
+            username, None, self._realm, full_name, acting_user="self", **opts
         )
         self.sync_avatar_from_ldap(user_profile, ldap_user)
         self.sync_custom_profile_fields_from_ldap(user_profile, ldap_user)

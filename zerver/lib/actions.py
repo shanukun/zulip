@@ -636,7 +636,7 @@ def do_create_user(
     source_profile: Optional[UserProfile] = None,
     realm_creation: bool = False,
     *,
-    acting_user: Optional[UserProfile],
+    acting_user: Optional[Union[str, UserProfile]],
 ) -> UserProfile:
 
     user_profile = create_user(
@@ -657,7 +657,7 @@ def do_create_user(
     )
 
     event_time = user_profile.date_joined
-    if not acting_user:
+    if not acting_user or acting_user == "self":
         acting_user = user_profile
     RealmAuditLog.objects.create(
         realm=user_profile.realm,

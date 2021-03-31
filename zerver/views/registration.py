@@ -409,7 +409,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                 default_stream_groups=default_stream_groups,
                 source_profile=source_profile,
                 realm_creation=realm_creation,
-                acting_user=None,
+                acting_user="self",
             )
 
         if realm_creation:
