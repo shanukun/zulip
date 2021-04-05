@@ -1466,7 +1466,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         referrer = self.example_user("hamlet")
         multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
         multiuse_obj.streams.set(streams)
-        create_confirmation_link(multiuse_obj, Confirmation.MULTIUSE_INVITE)
+        validity_in_days = 2
+        create_confirmation_link(multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_days)
         multiuse_confirmation = Confirmation.objects.all().last()
         multiuse_object_key = multiuse_confirmation.confirmation_key
         account_data_dict = self.get_account_data_dict(email=email, name=name)
@@ -3640,7 +3641,8 @@ class GoogleAuthBackendTest(SocialAuthBase):
         referrer = self.example_user("hamlet")
         multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
         multiuse_obj.streams.set(streams)
-        create_confirmation_link(multiuse_obj, Confirmation.MULTIUSE_INVITE)
+        validity_in_days = 2
+        create_confirmation_link(multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_days)
         multiuse_confirmation = Confirmation.objects.all().last()
         multiuse_object_key = multiuse_confirmation.confirmation_key
 

@@ -61,8 +61,7 @@ def get_object_from_key(
     except Confirmation.DoesNotExist:
         raise ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST)
 
-    time_elapsed = timezone_now() - confirmation.date_sent
-    if time_elapsed.total_seconds() > _properties[confirmation.type].validity_in_days * 24 * 3600:
+    if timezone_now() > confirmation.expiry_date:
         raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
 
     obj = confirmation.content_object
@@ -73,7 +72,10 @@ def get_object_from_key(
 
 
 def create_confirmation_link(
-    obj: ContentType, confirmation_type: int, url_args: Mapping[str, str] = {}
+    obj: ContentType,
+    confirmation_type: int,
+    validity_in_days: Optional[int] = None,
+    url_args: Mapping[str, str] = {},
 ) -> str:
     key = generate_key()
     realm = None
@@ -82,11 +84,20 @@ def create_confirmation_link(
     elif isinstance(obj, Realm):
         realm = obj
 
+    expiry_date = None
+    if validity_in_days:
+        expiry_date = timezone_now() + datetime.timedelta(days=validity_in_days)
+    else:
+        expiry_date = timezone_now() + datetime.timedelta(
+            days=_properties[confirmation_type].validity_in_days
+        )
+
     Confirmation.objects.create(
         content_object=obj,
         date_sent=timezone_now(),
         confirmation_key=key,
         realm=realm,
+        expiry_date=expiry_date,
         type=confirmation_type,
     )
     return confirmation_url(key, realm, confirmation_type, url_args)
@@ -112,6 +123,7 @@ class Confirmation(models.Model):
     content_object = GenericForeignKey("content_type", "object_id")
     date_sent: datetime.datetime = models.DateTimeField(db_index=True)
     confirmation_key: str = models.CharField(max_length=40, db_index=True)
+    expiry_date: datetime.datetime = models.DateTimeField(db_index=True)
     realm: Optional[Realm] = models.ForeignKey(Realm, null=True, on_delete=CASCADE)
 
     # The following list is the set of valid types
