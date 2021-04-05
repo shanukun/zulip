@@ -6260,11 +6260,15 @@ def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
     return sorted(idle_user_ids)
 
 
-def do_send_confirmation_email(invitee: PreregistrationUser, referrer: UserProfile) -> str:
+def do_send_confirmation_email(
+    invitee: PreregistrationUser, referrer: UserProfile, invite_expires_in_days: int
+) -> str:
     """
     Send the confirmation/welcome e-mail to an invited user.
     """
-    activation_url = create_confirmation_link(invitee, Confirmation.INVITATION)
+    activation_url = create_confirmation_link(
+        invitee, Confirmation.INVITATION, validity_in_days=invite_expires_in_days
+    )
     context = {
         "referrer_full_name": referrer.full_name,
         "referrer_email": referrer.delivery_email,
@@ -6361,6 +6365,7 @@ def do_invite_users(
     user_profile: UserProfile,
     invitee_emails: Collection[str],
     streams: Collection[Stream],
+    invite_expires_in_days: int,
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
 ) -> None:
 
@@ -6446,7 +6451,11 @@ def do_invite_users(
         stream_ids = [stream.id for stream in streams]
         prereg_user.streams.set(stream_ids)
 
-        event = {"prereg_id": prereg_user.id, "referrer_id": user_profile.id}
+        event = {
+            "prereg_id": prereg_user.id,
+            "referrer_id": user_profile.id,
+            "invite_expires_in_days": invite_expires_in_days,
+        }
         queue_json_publish("invites", event)
 
     if skipped:
@@ -6475,11 +6484,13 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
     invites = []
 
     for invitee in prereg_users:
+        expiry_date = invitee.confirmation.get().expiry_date
         invites.append(
             dict(
                 email=invitee.email,
                 invited_by_user_id=invitee.referred_by.id,
                 invited=datetime_to_timestamp(invitee.invited_at),
+                expiry_date=datetime_to_timestamp(expiry_date),
                 id=invitee.id,
                 invited_as=invitee.invited_as,
                 is_multiuse=False,
@@ -6490,11 +6501,8 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
         # We do not return multiuse invites to non-admin users.
         return invites
 
-    lowest_datetime = timezone_now() - datetime.timedelta(
-        days=settings.INVITATION_LINK_VALIDITY_DAYS
-    )
     multiuse_confirmation_objs = Confirmation.objects.filter(
-        realm=user_profile.realm, type=Confirmation.MULTIUSE_INVITE, date_sent__gte=lowest_datetime
+        realm=user_profile.realm, type=Confirmation.MULTIUSE_INVITE, expiry_date__gte=timezone_now()
     )
     for confirmation_obj in multiuse_confirmation_objs:
         invite = confirmation_obj.content_object
@@ -6502,6 +6510,7 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
             dict(
                 invited_by_user_id=invite.referred_by.id,
                 invited=datetime_to_timestamp(confirmation_obj.date_sent),
+                expiry_date=datetime_to_timestamp(confirmation_obj.expiry_date),
                 id=invite.id,
                 link_url=confirmation_url(
                     confirmation_obj.confirmation_key,
@@ -6516,7 +6525,10 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
 
 
 def do_create_multiuse_invite_link(
-    referred_by: UserProfile, invited_as: int, streams: Sequence[Stream] = []
+    referred_by: UserProfile,
+    invited_as: int,
+    invite_expires_in_days: int,
+    streams: Sequence[Stream] = [],
 ) -> str:
     realm = referred_by.realm
     invite = MultiuseInvite.objects.create(realm=realm, referred_by=referred_by)
@@ -6525,7 +6537,9 @@ def do_create_multiuse_invite_link(
     invite.invited_as = invited_as
     invite.save()
     notify_invites_changed(referred_by)
-    return create_confirmation_link(invite, Confirmation.MULTIUSE_INVITE)
+    return create_confirmation_link(
+        invite, Confirmation.MULTIUSE_INVITE, validity_in_days=invite_expires_in_days
+    )
 
 
 def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
@@ -6558,6 +6572,10 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
 
     prereg_user.invited_at = timezone_now()
     prereg_user.save()
+    invite_expires_in_days = (
+        prereg_user.confirmation.get().expiry_date - prereg_user.invited_at
+    ).days
+    prereg_user.confirmation.clear()
 
     do_increment_logging_stat(
         prereg_user.realm, COUNT_STATS["invites_sent::day"], None, prereg_user.invited_at
@@ -6569,6 +6587,7 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
         "prereg_id": prereg_user.id,
         "referrer_id": prereg_user.referred_by.id,
         "email_body": None,
+        "invite_expires_in_days": invite_expires_in_days,
     }
     queue_json_publish("invites", event)
 

@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from typing import Any
 
+from django.conf import settings
 from django.core.management.base import CommandError
 
 from confirmation.models import Confirmation, create_confirmation_link
@@ -17,6 +18,12 @@ class Command(ZulipBaseCommand):
             "--force",
             action="store_true",
             help="Override that the domain is restricted to external users.",
+        )
+        parser.add_argument(
+            "--invite-expires-in-days",
+            default=settings.INVITATION_LINK_VALIDITY_DAYS,
+            type=int,
+            help="Number of days before link expires.",
         )
         parser.add_argument(
             "emails",
@@ -60,4 +67,12 @@ class Command(ZulipBaseCommand):
 
             prereg_user = PreregistrationUser(email=email, realm=realm)
             prereg_user.save()
-            print(email + ": " + create_confirmation_link(prereg_user, Confirmation.INVITATION))
+            print(
+                email
+                + ": "
+                + create_confirmation_link(
+                    prereg_user,
+                    Confirmation.INVITATION,
+                    validity_in_days=options["invite_expires_in_days"],
+                )
+            )
