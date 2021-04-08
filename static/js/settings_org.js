@@ -202,6 +202,10 @@ function get_property_value(property_name) {
         return JSON.stringify(page_params[property_name]);
     }
 
+    if (property_name === "realm_jitsi_server_url") {
+        return page_params["jitsi_server_url"];
+    }
+
     return page_params[property_name];
 }
 
@@ -856,6 +860,8 @@ export function build_page() {
                 const input_value = get_input_element_value(input_elem);
                 if (input_value !== undefined) {
                     const property_name = input_elem.attr("id").replace("id_realm_", "");
+
+                    console.log("property_name " + property_name)
                     data[property_name] = JSON.stringify(input_value);
                 }
             }

@@ -56,6 +56,8 @@ export function build_page() {
     const options = {
         custom_profile_field_types: page_params.custom_profile_field_types,
         realm_name: page_params.realm_name,
+        jitsi_server_url: page_params.jitsi_server_url,
+        realm_video_chat_provider: page_params.realm_video_chat_provider,
         realm_available_video_chat_providers: page_params.realm_available_video_chat_providers,
         realm_description: page_params.realm_description,
         realm_inline_image_preview: page_params.realm_inline_image_preview,

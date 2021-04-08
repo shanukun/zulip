@@ -194,6 +194,14 @@
                         {{/each}}
                     </select>
                 </div>
+                {{#if (eq realm_video_chat_provider realm_available_video_chat_providers.jitsi_meet.id)}}
+                <div class="input-group">
+                    <label for="realm_jitsi_server_url">{{t "Jitsi Server URL" }}</label>
+                    <input type="text" name="realm_jitsi_server_url" class="setting-widget prop-element" id="id_realm_jitsi_server_url"
+                      autocomplete="off" data-setting-widget-type="string"
+                      value="{{jitsi_server_url}}" maxlength="40" />
+                </div>
+                {{/if}}
 
                 {{> dropdown_list_widget
                   widget_name="realm_default_code_block_language"
